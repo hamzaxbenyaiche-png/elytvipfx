@@ -1,0 +1,21 @@
+# Sessions Telegram (contiennent les clés d'auth — ne jamais committer)
+*.session
+*.session-journal
+*.session.bak
+
+# Locks
+.*.lock
+
+# Logs et état
+*.log
+*.pid
+scheduler_state.json
+signal_counter.json
+signals_log.json
+
+# Fichiers perso / temporaires
+__pycache__/
+*.pyc
+.DS_Store
+qr_code.png
+spots.json
