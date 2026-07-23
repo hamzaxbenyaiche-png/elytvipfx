@@ -1,0 +1,7 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "bash start_bot.sh"
+restartPolicyType = "always"
+restartPolicyMaxRetries = 10
