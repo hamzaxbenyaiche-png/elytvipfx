@@ -19,3 +19,6 @@ __pycache__/
 .DS_Store
 qr_code.png
 spots.json
+*.gif
+*.png
+qr_page.html
