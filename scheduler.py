@@ -520,7 +520,10 @@ def fetch_currency_strength_sync() -> dict:
     result = {}
     try:
         with sync_playwright() as pw:
-            browser = pw.chromium.launch(headless=True)
+            browser = pw.chromium.launch(
+                headless=True,
+                args=["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"],
+            )
             page = browser.new_page()
             page.goto('https://currencystrengthmeter.org/', wait_until='networkidle', timeout=30000)
             html = page.content()
@@ -535,7 +538,9 @@ def fetch_currency_strength_sync() -> dict:
                 result[cur] = round(float(m.group(1)) / 10, 1)
             else:
                 result[cur] = None
-    except Exception:
+                log.warning(f"[CURRENCY STRENGTH] Pas de match pour {cur}")
+    except Exception as e:
+        log.error(f"[CURRENCY STRENGTH] Scraping échoué : {e}")
         result = {c: None for c in _CURRENCIES}
     return result
 
