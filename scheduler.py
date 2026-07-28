@@ -156,22 +156,30 @@ async def send_daily_relance(client):
 
 
 async def send_weekly_relance(client):
-    """Relance hebdomadaire vendredi 19h — résultats semaine + push VIP."""
+    """Relance hebdomadaire vendredi 19h — bilan de la semaine + push VIP."""
     try:
         n = _get_spots_shown()
         stats = get_week_stats()
         signals = stats.get('signals', 0)
+        tps = stats.get('tps', 0)
 
         now = paris_now()
         monday = now - timedelta(days=now.weekday())
         period = f"{monday.strftime('%d/%m')} → {now.strftime('%d/%m')}"
+
+        winrate = ""
+        if signals > 0:
+            estimated_wins = min(signals, round(tps / 2))
+            wr = round((estimated_wins / signals) * 100)
+            winrate = f"\n📈 <b>Winrate estimé</b> : ~{wr}%"
 
         msg = (
             f"📅 <b>BILAN DE LA SEMAINE — ELYT</b>\n"
             f"<i>{period}</i>\n\n"
             f"Cette semaine avec elyt :\n"
             f"📡 <b>{signals} signaux</b> envoyés sur les marchés\n"
-            f"✅ Analyse quotidienne chaque matin\n"
+            f"✅ <b>{tps} TP</b> atteints"
+            f"{winrate}\n\n"
             f"💰 Profits sécurisés sur XAUUSD & Forex\n\n"
             f"🔐 <b>ELYT FOREX VIP — {n} place{'s' if n != 1 else ''} restante{'s' if n != 1 else ''}</b>\n\n"
             f"ELYT FOREX VIP c'est exactement ça, mais en exclusif :\n"
@@ -183,7 +191,21 @@ async def send_weekly_relance(client):
         )
 
         await client.send_message(config.TARGET_GROUP_ID, msg, parse_mode='html')
-        log.info(f"[RELANCE WEEKLY] Envoyée — {n} places")
+        log.info(f"[RELANCE WEEKLY] Envoyée — {signals} signaux, {tps} TP, {n} places")
+
+        weekend_msg = (
+            "🔥 <b>WEEK-END — ELYT</b>\n\n"
+            "Semaine terminée.\n\n"
+            "Les marchés ont bougé, on a bougé avec eux. "
+            "Chaque trade géré proprement — gagné ou non — c'est de la progression. "
+            "C'est ça le vrai travail.\n\n"
+            "Profitez du week-end. Ressourcez-vous. "
+            "Lundi les marchés rouvrent et on repart.\n\n"
+            "<i>Bonne soirée à toute la team elyt</i> 🤍\n\n"
+            "🧿 @elytsupport"
+        )
+        await client.send_message(config.TARGET_GROUP_ID, weekend_msg, parse_mode='html')
+        log.info("[RELANCE WEEKLY] Message week-end envoyé")
     except Exception as e:
         log.error(f"[RELANCE WEEKLY] Erreur: {e}")
 
@@ -857,55 +879,6 @@ async def send_islamic_quote(client):
         log.info("[CITATION] Envoyée")
     except Exception as e:
         log.error(f"[CITATION] Erreur: {e}")
-
-
-async def send_weekly_bilan(client):
-    try:
-        stats = get_week_stats()
-        now = paris_now()
-        monday = now - timedelta(days=now.weekday())
-        period = f"{monday.strftime('%d/%m')} au {now.strftime('%d/%m/%Y')}"
-
-        winrate = ""
-        if stats['signals'] > 0:
-            estimated_wins = min(stats['signals'], round(stats['tps'] / 2))
-            wr = round((estimated_wins / stats['signals']) * 100)
-            winrate = f"\n📈 Winrate estimé   : ~{wr}%"
-
-        msg = (
-            f""
-            f"📊 <b>BILAN DE LA SEMAINE — ELYT</b>\n"
-            f"\n"
-            f"<i>Semaine du {period}</i>\n\n"
-            f"📡  Signaux envoyés   <b>{stats['signals']}</b>\n"
-            f"✅  TP atteints       <b>{stats['tps']}</b>"
-            f"{winrate}\n\n"
-            f"\n"
-            f"Que Allah bénisse nos échanges et multiplie nos rizq 🤲\n\n"
-            f"🧿 @elytsupport"
-        )
-        await client.send_message(config.TARGET_GROUP_ID, msg, parse_mode='html')
-        log.info("[BILAN] Envoyé")
-
-        # Message fin de semaine — détente + fierté
-        weekend_msg = (
-            ""
-            "🔥 <b>WEEK-END — ELYT</b>\n"
-            "\n"
-            "Semaine terminée.\n\n"
-            "Les marchés ont bougé, on a bougé avec eux. "
-            "Chaque trade géré proprement — gagné ou non — c'est de la progression. "
-            "C'est ça le vrai travail.\n\n"
-            "\n"
-            "Profitez du week-end. Ressourcez-vous. "
-            "Lundi les marchés rouvrent et on repart.\n\n"
-            "<i>Bonne soirée à toute la team elyt</i> 🤍\n\n"
-            "🧿 @elytsupport"
-        )
-        await client.send_message(config.TARGET_GROUP_ID, weekend_msg, parse_mode='html')
-        log.info("[BILAN] Message week-end envoyé")
-    except Exception as e:
-        log.error(f"[BILAN] Erreur: {e}")
 
 
 SAMEDI_MESSAGES = [

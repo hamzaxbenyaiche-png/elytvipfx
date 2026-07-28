@@ -8,7 +8,7 @@ import json
 import os
 from datetime import datetime, timezone
 
-SIGNAL_FILE = "/Users/hamzaxbench/telegram_forwarder/signals_log.json"
+SIGNAL_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'signals_log.json')
 
 ASSET_MAP = {
     'XAUUSD': '🪙 GOLD — XAUUSD',
