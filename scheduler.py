@@ -42,13 +42,15 @@ SPOTS_FILE = os.path.join(os.path.dirname(__file__), 'spots.json')
 def _load_spots() -> dict:
     try:
         if os.path.exists(SPOTS_FILE):
-            return json.load(open(SPOTS_FILE))
+            with open(SPOTS_FILE) as f:
+                return json.load(f)
     except Exception:
         pass
     return {"base_cap": 20, "start_month": 6, "start_year": 2026}
 
 def _save_spots(spots: dict):
-    json.dump(spots, open(SPOTS_FILE, 'w'), indent=2)
+    with open(SPOTS_FILE, 'w') as f:
+        json.dump(spots, f, indent=2)
 
 def _get_monthly_cap() -> int:
     """Cap du mois courant : 20 + 5 par mois écoulé depuis juin 2026."""
@@ -167,19 +169,12 @@ async def send_weekly_relance(client):
         monday = now - timedelta(days=now.weekday())
         period = f"{monday.strftime('%d/%m')} → {now.strftime('%d/%m')}"
 
-        winrate = ""
-        if signals > 0:
-            estimated_wins = min(signals, round(tps / 2))
-            wr = round((estimated_wins / signals) * 100)
-            winrate = f"\n📈 <b>Winrate estimé</b> : ~{wr}%"
-
         msg = (
             f"📅 <b>BILAN DE LA SEMAINE — ELYT</b>\n"
             f"<i>{period}</i>\n\n"
             f"Cette semaine avec elyt :\n"
             f"📡 <b>{signals} signaux</b> envoyés sur les marchés\n"
-            f"✅ <b>{tps} TP</b> atteints"
-            f"{winrate}\n\n"
+            f"✅ <b>{tps} TP</b> atteints\n\n"
             f"💰 Profits sécurisés sur XAUUSD & Forex\n\n"
             f"🔐 <b>ELYT FOREX VIP — {n} place{'s' if n != 1 else ''} restante{'s' if n != 1 else ''}</b>\n\n"
             f"ELYT FOREX VIP c'est exactement ça, mais en exclusif :\n"
@@ -396,7 +391,8 @@ def is_testimonial(text: str) -> bool:
 def _load_state() -> dict:
     try:
         if os.path.exists(STATE_FILE):
-            return json.load(open(STATE_FILE))
+            with open(STATE_FILE) as f:
+                return json.load(f)
     except Exception:
         pass
     return {}
@@ -404,7 +400,8 @@ def _load_state() -> dict:
 
 def _save_state(state: dict):
     try:
-        json.dump(state, open(STATE_FILE, 'w'))
+        with open(STATE_FILE, 'w') as f:
+            json.dump(state, f)
     except Exception:
         pass
 
@@ -569,7 +566,7 @@ def fetch_currency_strength_sync() -> dict:
 
 async def fetch_currency_strength(http) -> dict:
     """Force /10 de chaque devise — scraping direct de currencystrengthmeter.org."""
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     return await loop.run_in_executor(None, fetch_currency_strength_sync)
 
 
@@ -667,8 +664,17 @@ async def send_market_bias(client, state: dict = None):
     """Envoie l'analyse marché et stocke les IDs de messages pour édition future."""
     try:
         now_paris = paris_now()
+        # Pas d'analyse le week-end (marchés fermés, données stale)
+        if now_paris.weekday() >= 5:
+            log.info("[BIAIS] Week-end — analyse ignorée")
+            return
         async with httpx.AsyncClient(timeout=20, follow_redirects=True) as http:
             msg = await _build_bias_message(http, now_paris)
+
+        # Vérification : ne pas envoyer si toutes les données sont manquantes
+        if msg.count('—') > 10:
+            log.warning("[BIAIS] Trop de données manquantes — analyse non envoyée")
+            return
 
         targets = getattr(config, 'MORNING_TARGETS', [config.TARGET_GROUP_ID])
         msg_ids = {}
@@ -1024,12 +1030,14 @@ async def run_scheduler(client):
             state[key_morning] = True
             _save_state(state)
 
-        # 2h00 — Asian Killzone
+        # 2h00 — Asian Killzone (seulement entre 2h et 4h pour éviter le rattrapage tardif)
         key_asian = f"{today}_asian"
-        if h >= 2 and key_asian not in state:
+        if 2 <= h < 5 and key_asian not in state:
             await send_asian_killzone(client)
             state[key_asian] = True
             _save_state(state)
+        elif h >= 5 and key_asian not in state:
+            state[key_asian] = True  # marquer comme fait sans envoyer
 
         # 8h00 — London Killzone + Citation islamique
         key_london = f"{today}_london"

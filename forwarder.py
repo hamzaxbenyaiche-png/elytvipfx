@@ -9,18 +9,20 @@ import logging
 import os
 import re
 import sys
-
-if sys.platform == 'win32':
-    import msvcrt
-else:
-    import fcntl
+import traceback
 from telethon import TelegramClient, events
 from telethon.tl.types import Channel, Chat, MessageMediaDocument, DocumentAttributeSticker
 import config
 from scheduler import run_scheduler, is_testimonial, _load_spots, _save_spots, _get_spots_shown
 from signal_parser import detect_signal, detect_tp_hit, parse_signal, format_signal, log_signal
 
-TP_GIF = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tp_hit.gif')
+_BOT_DIR = os.path.dirname(os.path.abspath(__file__))
+TP_GIFS = {
+    1: os.path.join(_BOT_DIR, 'tp1_hit.gif'),
+    2: os.path.join(_BOT_DIR, 'tp2_hit.gif'),
+    3: os.path.join(_BOT_DIR, 'tp3_hit.gif'),
+}
+TP_GIF_DEFAULT = os.path.join(_BOT_DIR, 'tp_hit.gif')
 TP_TARGETS = [config.TARGET_GROUP_ID, config.VIP_GROUP_ID]
 
 logging.basicConfig(
@@ -36,13 +38,15 @@ SIGNAL_COUNTER_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '
 
 def _get_signal_count():
     try:
-        return json.load(open(SIGNAL_COUNTER_FILE)).get('count', 0)
-    except:
+        with open(SIGNAL_COUNTER_FILE) as f:
+            return json.load(f).get('count', 0)
+    except Exception:
         return 0
 
 def _inc_signal_count():
     count = _get_signal_count() + 1
-    json.dump({'count': count}, open(SIGNAL_COUNTER_FILE, 'w'))
+    with open(SIGNAL_COUNTER_FILE, 'w') as f:
+        json.dump({'count': count}, f)
     return count
 
 VIP_TEASERS = [
@@ -284,9 +288,12 @@ async def main():
                             f"<i>C'est ça le travail.</i>\n\n"
                             f"🧿 @elytsupport"
                         )
+                        gif_path = TP_GIFS.get(tp_num, TP_GIF_DEFAULT)
+                        if not os.path.exists(gif_path):
+                            gif_path = TP_GIF_DEFAULT
                         for gid in TP_TARGETS:
                             try:
-                                await client.send_file(gid, TP_GIF, caption=caption, parse_mode='html')
+                                await client.send_file(gid, gif_path, caption=caption, parse_mode='html')
                             except Exception as e:
                                 log.error(f"[TP HIT] Erreur groupe {gid}: {e}")
                         log.info(f"[TP HIT] TP{tp_num} {pair} → {len(TP_TARGETS)} groupe(s)")
@@ -319,7 +326,7 @@ async def main():
                     log.info(f"[SKIP] Message non-signal ignoré ({chat_title})")
 
         except Exception as e:
-            log.error(f"[ERREUR] {e}")
+            log.error(f"[ERREUR] {e}\n{traceback.format_exc()}")
 
     log.info("=== Démarrage forwarder ELYT ===")
     await client.connect()
@@ -340,18 +347,30 @@ async def main():
 
 
 if __name__ == '__main__':
-    # Verrou exclusif : une seule instance à la fois
+    # Verrou exclusif : une seule instance à la fois (compatible Mac + Windows)
     _lock_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.forwarder.lock')
-    _lock_fd = open(_lock_path, 'w')
     try:
         if sys.platform == 'win32':
+            import msvcrt
+            _lock_fd = open(_lock_path, 'w')
             _lock_fd.write('lock')
             _lock_fd.flush()
             _lock_fd.seek(0)
-            msvcrt.locking(_lock_fd.fileno(), msvcrt.LK_NBLCK, 4)
+            try:
+                msvcrt.locking(_lock_fd.fileno(), msvcrt.LK_NBLCK, 4)
+            except OSError:
+                print("❌ Une instance est déjà en cours. Arrêt.")
+                raise SystemExit(0)
         else:
-            fcntl.flock(_lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except OSError:
-        print("❌ Une instance est déjà en cours. Arrêt.")
-        raise SystemExit(0)
+            import fcntl
+            _lock_fd = open(_lock_path, 'w')
+            try:
+                fcntl.flock(_lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except OSError:
+                print("❌ Une instance est déjà en cours. Arrêt.")
+                raise SystemExit(0)
+    except SystemExit:
+        raise
+    except Exception:
+        pass  # Si le verrou échoue pour une autre raison, on continue quand même
     asyncio.run(main())
