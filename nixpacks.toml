@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["python311", "python311Packages.pip", "chromium", "nss", "atk", "cups", "gtk3", "alsa-lib", "libdrm", "mesa"]
+nixPkgs = ["python311", "python311Packages.pip", "chromium", "glib", "nss", "nspr", "atk", "at-spi2-atk", "cups", "dbus", "expat", "gtk3", "alsa-lib", "libdrm", "mesa", "cairo", "pango", "libxkbcommon", "xorg.libX11", "xorg.libxcb", "xorg.libXcomposite", "xorg.libXdamage", "xorg.libXext", "xorg.libXfixes", "xorg.libXrandr"]
 
 [phases.install]
 cmds = ["pip3 install --break-system-packages -r requirements.txt", "python3 -m playwright install chromium"]
