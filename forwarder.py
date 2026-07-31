@@ -61,6 +61,16 @@ VIP_TEASERS = [
     "♾️ <b>LA PATIENCE EST UNE POSITION</b>\n\nNe pas trader c'est aussi une décision.\n\nQuand le marché n'est pas clair, quand les signaux se contredisent, quand la liquidité est faible — rester en dehors c'est protéger son capital. Les meilleures semaines sont souvent celles où on a su attendre le bon setup.\n\n🧿 @elytsupport",
 ]
 
+MARKET_REMINDERS = [
+    "📅 <b>PETIT RAPPEL</b>\n\nPrendre 5 minutes pour regarder le calendrier économique peut vraiment faire la différence.\n\nTu sais quels événements sont susceptibles de créer de la volatilité et tu évites de te faire surprendre en pleine position.\n\n👉 Quelques minutes de préparation peuvent t'éviter beaucoup d'erreurs.\n\n🧿 @elytsupport",
+
+    "🛡️ <b>PETIT RAPPEL</b>\n\nUn stop loss n'est pas une option, c'est une assurance.\n\nAvant chaque entrée, vérifie ta taille de position par rapport à ton capital — pas l'inverse.\n\n🧿 @elytsupport",
+
+    "🕯️ <b>PETIT RAPPEL</b>\n\nRegarde toujours le biais Daily avant de trader en intraday.\n\nUn setup H1 parfait contre la tendance de fond reste un pari, pas un plan.\n\n🧿 @elytsupport",
+
+    "⏳ <b>PETIT RAPPEL</b>\n\nLes annonces macro à fort impact (CPI, NFP, décisions de taux) font bouger le marché brutalement dans les deux sens.\n\nMieux vaut être en dehors du marché avant, que coincé dedans pendant.\n\n🧿 @elytsupport",
+]
+
 # Messages Financial Juice haute priorité uniquement
 FJ_RED = re.compile(
     r'🚨|BREAKING|ALERT|WARNING|URGENT|FLASH|RED|CRITICAL|MAJOR|SURPRISE|SHOCK|UNEXPECT|ABOVE EXPECT|BELOW EXPECT|BEATS|MISSES|EXCEEDS',
@@ -211,6 +221,7 @@ async def main():
             raw_text = event.message.text or ''
             is_alert = bool(chat_ids & set(config.ALERT_GROUPS))
             is_vip_source = bool(chat_ids & set(config.VIP_SIGNAL_SOURCES))
+            is_full_share = bool(chat_ids & set(getattr(config, 'FULL_SHARE_SOURCES', [])))
 
             # Sources VIP (NABIL + Hunt Money) : signaux uniquement → groupe VIP
             if is_vip_source:
@@ -224,6 +235,26 @@ async def main():
                     log_signal(parsed)
                     await client.send_message(config.VIP_GROUP_ID, msg)
                     log.info(f"[VIP SIGNAL] {parsed['direction']} {parsed['asset']} ({chat_title})")
+                return
+
+            # Sources full-share : tout est relayé tel quel, sans filtre de détection de signal
+            if is_full_share:
+                if event.message.media:
+                    if isinstance(event.message.media, MessageMediaDocument) and not raw_text and not any(
+                        isinstance(attr, DocumentAttributeSticker) for attr in getattr(event.message.media.document, 'attributes', [])
+                    ):
+                        return  # fichier sans texte, pas un sticker → ignoré
+                    try:
+                        caption = clean_message(raw_text) if raw_text else None
+                        await client.send_file(config.TARGET_GROUP_ID, event.message.media, caption=caption, parse_mode='html')
+                        log.info(f"[FULL SHARE] Média envoyé ({chat_title})")
+                    except Exception as e:
+                        log.error(f"[FULL SHARE] Erreur média ({chat_title}): {e}")
+                    return
+                cleaned = clean_message(raw_text)
+                if cleaned:
+                    await client.send_message(config.TARGET_GROUP_ID, cleaned, parse_mode='html')
+                    log.info(f"[FULL SHARE] {chat_title} → envoyé")
                 return
 
             # Financial Juice : ignore les messages non-urgents
@@ -310,7 +341,11 @@ async def main():
                         log.info(f"[SIGNAL] {parsed['direction']} {parsed['asset']} ({chat_title})")
                         count = _inc_signal_count()
                         if count % 5 == 0:
-                            teaser = VIP_TEASERS[(count // 5 - 1) % len(VIP_TEASERS)]
+                            cycle = count // 5 - 1
+                            if cycle % 2 == 0:
+                                teaser = VIP_TEASERS[(cycle // 2) % len(VIP_TEASERS)]
+                            else:
+                                teaser = MARKET_REMINDERS[(cycle // 2) % len(MARKET_REMINDERS)]
                             await client.send_message(config.TARGET_GROUP_ID, teaser, parse_mode='html')
                             log.info(f"[TEASER VIP] Envoyé après {count} signaux")
                         return

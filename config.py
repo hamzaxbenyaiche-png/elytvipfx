@@ -26,8 +26,14 @@ MORNING_TARGETS = [
 
 # Groupes dont les signaux sont envoyés UNIQUEMENT dans le VIP (rien d'autre)
 VIP_SIGNAL_SOURCES = [
-    -1002162787370,  # NABIL FX CAPITAL
+    -1002162787370,  # NABIL FX CAPITAL (alias "N.M CAPITAL")
     -1001302635479,  # Hunt Money
+]
+
+# Groupes dont TOUS les messages sont partagés tel quel (pas seulement les signaux)
+FULL_SHARE_SOURCES = [
+    -1001240377623,  # Fondamental & News
+    -1001656697308,  # Fondamentale Trader
 ]
 
 # ─────────────────────────────────────────────
