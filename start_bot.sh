@@ -7,12 +7,5 @@ if [ -n "$SESSION_GZ_B64" ]; then
     echo "✅ Session Telegram restaurée"
 fi
 
-# Install Playwright browsers if needed
-if [ ! -d "$HOME/.cache/ms-playwright" ]; then
-    echo "📦 Installation Chromium..."
-    python3 -m playwright install chromium
-    python3 -m playwright install-deps chromium 2>/dev/null || true
-fi
-
 echo "🚀 Démarrage du bot ELYT..."
 exec python3 forwarder.py

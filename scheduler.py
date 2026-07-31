@@ -10,6 +10,7 @@ import json
 import logging
 import os
 import random
+import shutil
 from datetime import datetime, timezone, timedelta
 
 import httpx
@@ -538,11 +539,18 @@ def fetch_currency_strength_sync() -> dict:
 
     result = {}
     try:
+        launch_kwargs = {
+            'headless': True,
+            'args': ["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"],
+        }
+        # Sur Railway/Nix, utilise le chromium du système (dépendances déjà
+        # résolues via RPATH) plutôt que le binaire téléchargé par Playwright,
+        # qui casse dans ce type d'environnement (libs partagées introuvables).
+        nix_chromium = shutil.which('chromium') or shutil.which('chromium-browser')
+        if nix_chromium:
+            launch_kwargs['executable_path'] = nix_chromium
         with sync_playwright() as pw:
-            browser = pw.chromium.launch(
-                headless=True,
-                args=["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"],
-            )
+            browser = pw.chromium.launch(**launch_kwargs)
             page = browser.new_page()
             page.goto('https://currencystrengthmeter.org/', wait_until='networkidle', timeout=30000)
             html = page.content()
