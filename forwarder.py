@@ -146,7 +146,12 @@ def clean_message(text: str) -> str:
     # "xauelyt" ou "xau ELYT" → "ELYT" (pseudo concurrent xaubara)
     text = re.sub(r'xau\s*ELYT', 'ELYT', text, flags=re.IGNORECASE)
 
-    # Nettoie le markdown cassé (** ou __ orphelins)
+    # Convertit le markdown **gras**/__gras__ en HTML — sinon les astérisques
+    # restent visibles tels quels (parse_mode='html' n'interprète pas le markdown)
+    text = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', text)
+    text = re.sub(r'__(.+?)__', r'<b>\1</b>', text)
+
+    # Nettoie le markdown cassé (** ou __ ou ~~ orphelins restants)
     for marker in ['**', '__', '~~']:
         if text.count(marker) % 2 != 0:
             text = text.replace(marker, '')
