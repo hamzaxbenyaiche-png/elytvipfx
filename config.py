@@ -70,6 +70,10 @@ ALLOWED_GROUPS = [
     -1001215049720,  # UnitedSignals
     -1001868019139,  # Gold Signals VIP
     -1001757977653,  # SHY TRADING ✨
+    -1001624798634,  # Kasper Trading
+    -1001777355266,  # Impact Trading
+    -1002769656480,  # TriadFx
+    -1002489151772,  # Anesaurus Signals
 ]
 
 # Groupes dont les messages sont envoyés avec alerte rouge ⚠️
@@ -102,6 +106,10 @@ BLACKLIST = [
     "UnitedSignals", "United Signals",
     "Gold Signals VIP",
     "SHY TRADING", "Shy Trading", "Shy",
+    "Kasper Trading", "Kasper",
+    "Impact Trading",
+    "TriadFx", "Triad Fx", "Triad",
+    "Anesaurus Signals", "Anesaurus",
     # Groupes exclus
     "FUNDIFY", "Fundify",
     "Gold Sniper",
