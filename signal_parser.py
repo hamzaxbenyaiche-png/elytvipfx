@@ -230,25 +230,21 @@ def format_signal(parsed: dict) -> str:
         tps = tps[:3]
 
     asset_clean = re.sub(r'^(?:[\U0001F1E0-\U0001F1FF]{2}|[\U00010000-\U0010ffff☀-⛿✀-➿])\s*', '', asset)
+    asset_short = asset_clean.split(' — ')[0]
 
     lines = [
-        "🔔 SIGNAL ELYT",
-        "",
-        f"{direction}  {asset_clean}",
+        f"{direction} {asset_short} NOW",
         "",
     ]
 
     if entry:
-        lines.append(f"🎯 Entrée : {entry}")
-        lines.append("")
+        lines.append(f"📊PE {entry}")
     if sl:
-        lines.append(f"❌ SL : {sl}")
+        lines.append(f"❌SL {sl}")
     if sl_be:
-        lines.append(f"🔒 SL BE : {sl_be}")
-    if tps:
-        lines.append("")
+        lines.append(f"🔒SL BE {sl_be}")
     for i, tp in enumerate(tps, 1):
-        lines.append(f"✅ TP{i} : {tp}")
+        lines.append(f"🎯TP{i} {tp}")
 
     swing_tag = "\n#SWING" if parsed.get('swing') else ""
 
