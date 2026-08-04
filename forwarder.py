@@ -118,9 +118,8 @@ def clean_message(text: str) -> str:
     # Supprime les liens YouTube entiers
     text = re.sub(r'https?://(www\.)?(youtube\.com|youtu\.be)\S*', '', text, flags=re.IGNORECASE)
 
-    # Supprime les liens markdown [texte](url)
-    text = re.sub(r'\[[^\]]*\]\(https?://\S+\)', '', text)
-    text = re.sub(r'\[[^\]]*\]\(t\.me/\S+\)', '', text)
+    # Supprime les liens markdown [texte](url) — quel que soit le format de l'url
+    text = re.sub(r'\[[^\]]*\]\([^)]*\)', '', text)
 
     # Supprime les attributions ([Tweet] ([Reuters] (CoinDesk) > X: > Reuters: etc.
     text = re.sub(r'\(\[[^\]]{1,40}\]', '', text)
@@ -148,8 +147,8 @@ def clean_message(text: str) -> str:
 
     # Convertit le markdown **gras**/__gras__ en HTML — sinon les astérisques
     # restent visibles tels quels (parse_mode='html' n'interprète pas le markdown)
-    text = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', text)
-    text = re.sub(r'__(.+?)__', r'<b>\1</b>', text)
+    text = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', text, flags=re.DOTALL)
+    text = re.sub(r'__(.+?)__', r'<b>\1</b>', text, flags=re.DOTALL)
 
     # Nettoie le markdown cassé (** ou __ ou ~~ orphelins restants)
     for marker in ['**', '__', '~~']:
