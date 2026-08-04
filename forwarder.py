@@ -69,6 +69,8 @@ MARKET_REMINDERS = [
     "🕯️ <b>PETIT RAPPEL</b>\n\nRegarde toujours le biais Daily avant de trader en intraday.\n\nUn setup H1 parfait contre la tendance de fond reste un pari, pas un plan.\n\n🧿 @elytsupport",
 
     "⏳ <b>PETIT RAPPEL</b>\n\nLes annonces macro à fort impact (CPI, NFP, décisions de taux) font bouger le marché brutalement dans les deux sens.\n\nMieux vaut être en dehors du marché avant, que coincé dedans pendant.\n\n🧿 @elytsupport",
+
+    "💭 <b><i>PETIT RAPPEL</i></b>\n\nLe marché sera toujours là demain. Ton <u>capital</u>, seulement si tu le protèges aujourd'hui.\n\n<blockquote>Un trade raté fait perdre de l'argent. Un trade mal géré fait perdre confiance — et ça coûte bien plus cher.</blockquote>\n\n🧿 @elytsupport",
 ]
 
 # Messages Financial Juice haute priorité uniquement

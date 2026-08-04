@@ -903,6 +903,8 @@ SAMEDI_MESSAGES = [
     "🔱 <b>PAUSE MÉRITÉE — ELYT</b>\n\nSemaine intense derrière nous. Marchés fermés devant nous.\n\nC'est le moment de recharger les batteries. Un trader reposé prend de meilleures décisions qu'un trader épuisé — c'est aussi simple que ça.\n\nProfitez du calme. On revient lundi avec l'analyse et les setups de la semaine.\n\n<i>Bon week-end à tous</i> 🤍\n\n🧿 @elytsupport",
 
     "🌅 <b>LE WEEK-END COMMENCE — ELYT</b>\n\nMarchés fermés. Esprits libres.\n\nCe moment de calme c'est précieux. Profitez-en pour vous ressourcer, passer du temps avec ceux qui comptent, vous rappeler pourquoi vous tradez.\n\nLundi on repart, plus forts et plus concentrés.\n\n<i>Toute la team elyt vous souhaite un excellent week-end</i> 🤍\n\n🧿 @elytsupport",
+
+    "🌅 <b><i>SAMEDI COMMENCE...</i></b>\n\n⏳ Et 24h sont devant nous pour faire ce qui nous donne un maximum <u>d'énergie</u>.\n\nAlors pourquoi pas <u>poser le téléphone</u>, fermer les graphiques...\n\n➡️ Et se focus à 100% sur <u>l'instant présent</u> ?\n\n<blockquote>Car si on se reconnecte maintenant, lundi on arrivera complètement rechargés et prêts mentalement.</blockquote>\n\n<b>BON SAMEDI À TOUS</b> 🧡\n\n🧿 @elytsupport",
 ]
 
 
